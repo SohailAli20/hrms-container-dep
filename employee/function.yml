@@ -1,0 +1,7 @@
+getEmployee:
+    handler: employee/getEmployee.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+        - http:
+              path: /employee/id
+              method: get
