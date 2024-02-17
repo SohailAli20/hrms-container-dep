@@ -1,0 +1,16 @@
+service: hrms
+frameworkVersion: "3"
+useDotenv: true
+
+plugins:
+    - serverless-offline
+
+provider:
+    name: aws
+    stage: dev
+    timeout: 15
+    runtime: nodejs18.x
+    region: us-east-1
+
+functions:
+    - ${file(./auth/function.yml)}

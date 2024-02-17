@@ -1,0 +1,16 @@
+signup:
+    handler: auth/signup.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+        - http:
+              path: /signup
+              method: post
+              cors: true
+signin:
+    handler: auth/signin.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+        - http:
+              path: /signin
+              method: post
+              cors: true
