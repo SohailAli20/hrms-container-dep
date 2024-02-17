@@ -58,60 +58,82 @@ exports.handler = async (event) => {
         `;
 
         const result = await client.query(query, [employeeId]);
-        const formattedResult = result.rows.map((row) => ({
-            personal_information: {
-                emp_id: row.emp_id,
-                email: row.email,
-                password: row.password,
-                work_email: row.work_email,
-                first_name: row.first_name,
-                last_name: row.last_name,
-                gender: row.gender,
-                dob: row.dob,
-                number: row.number,
-                emergency_number: row.emergency_number,
-                highest_qualification: row.highest_qualification,
-                address_id: row.address_id,
-                address_line_1: row.address_line_1,
-                address_line_2: row.address_line_2,
-                landmark: row.landmark,
-                country: row.country,
-                state: row.state,
-                city: row.city,
-                zipcode: row.zipcode,
-            },
-            professional_information: {
-                emp_detail_id: row.emp_detail_id,
-                designation_id: row.designation_id,
-                pf: row.pf,
-                uan: row.uan,
-                department_id: row.department_id,
-                reporting_manager_id: row.reporting_manager_id,
-                emp_type_id: row.emp_type_id,
-                work_location: row.work_location,
-                start_date: row.start_date,
-                department_name: row.department_name,
-                emp_type: row.emp_type,
-                emp_designation_id: row.emp_designation_id,
-                emp_designation: row.emp_designation,
-                reporting_manager_first_name: row.reporting_manager_first_name,
-                reporting_manager_last_name: row.reporting_manager_last_name,
-            },
-            documents: {
-                document_id: row.document_id,
-                name: row.name,
-                url: row.url,
-            },
-            equipment: {
-                owner: row.owner,
-                device_type_id: row.device_type_id,
-                manufacturer: row.manufacturer,
-                serial_number: row.serial_number,
-                note: row.note,
-                supply_date: row.supply_date,
-                device_type_name: row.device_type_name,
-            },
-        }));
+        const formattedResult = result.rows.reduce((acc, row) => {
+            if (!acc.personal_information) {
+                acc.personal_information = {
+                    emp_id: row.emp_id,
+                    email: row.email,
+                    password: row.password,
+                    work_email: row.work_email,
+                    first_name: row.first_name,
+                    last_name: row.last_name,
+                    gender: row.gender,
+                    dob: row.dob,
+                    number: row.number,
+                    emergency_number: row.emergency_number,
+                    highest_qualification: row.highest_qualification,
+                    address_id: row.address_id,
+                    address_line_1: row.address_line_1,
+                    address_line_2: row.address_line_2,
+                    landmark: row.landmark,
+                    country: row.country,
+                    state: row.state,
+                    city: row.city,
+                    zipcode: row.zipcode,
+                };
+            }
+
+            if (!acc.professional_information) {
+                acc.professional_information = {
+                    emp_detail_id: row.emp_detail_id,
+                    designation_id: row.designation_id,
+                    pf: row.pf,
+                    uan: row.uan,
+                    department_id: row.department_id,
+                    reporting_manager_id: row.reporting_manager_id,
+                    emp_type_id: row.emp_type_id,
+                    work_location: row.work_location,
+                    start_date: row.start_date,
+                    department_name: row.department_name,
+                    emp_type: row.emp_type,
+                    emp_designation_id: row.emp_designation_id,
+                    emp_designation: row.emp_designation,
+                    reporting_manager_first_name: row.reporting_manager_first_name,
+                    reporting_manager_last_name: row.reporting_manager_last_name,
+                };
+            }
+
+            if (row.document_id) {
+                if (!acc.documents) {
+                    acc.documents = {};
+                }
+
+                acc.documents[row.document_id] = {
+                    document_id: row.document_id,
+                    name: row.name,
+                    url: row.url,
+                };
+            }
+
+            if (!acc.equipment) {
+                acc.equipment = [];
+            }
+
+            if (row.device_type_name) {
+                acc.equipment.push({
+                    owner: row.owner,
+                    device_type_id: row.device_type_id,
+                    manufacturer: row.manufacturer,
+                    serial_number: row.serial_number,
+                    note: row.note,
+                    supply_date: row.supply_date,
+                    device_type_name: row.device_type_name,
+                });
+            }
+
+            return acc;
+        }, {});
+        formattedResult.documents = Object.values(formattedResult.documents);
 
         return {
             statusCode: 200,
