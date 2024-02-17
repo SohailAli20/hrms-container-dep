@@ -1,4 +1,4 @@
-require("dotenv").config();
+equire("dotenv").config();
 const { connectToDatabase } = require("../db/dbConnector");
 const { z } = require("zod");
 const { v4: uuid } = require("uuid");
