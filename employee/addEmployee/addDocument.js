@@ -1,4 +1,4 @@
-const { connectToDatabase } = require("../db/dbConnector");
+const { connectToDatabase } = require("../../db/dbConnector");
 
 exports.handler = async (event) => {
 	const documents = JSON.parse(event.body);
