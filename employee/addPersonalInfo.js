@@ -75,7 +75,7 @@ exports.handler = async (event) => {
             new Promise((resolve, reject) => {
                 client.query(empProfessionalQuery, [
                     personalInfoQueryResult.rows[0].id,
-                    1
+                    requestBody.emp_type
                 ], (err, res) => {
                     if (err) {
                         reject(err);
