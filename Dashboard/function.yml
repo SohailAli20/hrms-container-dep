@@ -1,0 +1,8 @@
+getEmployee:
+    handler: Dashboard/getEmployee.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+      - http:
+          path: /Dashboard/getEmployee
+          method: get
+          cors: true
