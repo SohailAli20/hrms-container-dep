@@ -39,3 +39,13 @@ addProfessionalInfo:
           path: employee/addProfessionalInfo
           method: put
           cors: true
+addEquipmentdetailsInfo:
+    handler: employee/addEquipmentdetailsInfo.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+      - http:
+          path: employee/addEquipmentdetailsInfo
+          method: put
+          cors: true
+
+          
