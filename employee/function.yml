@@ -23,3 +23,11 @@ addEmployee:
           path: /addEmployee
           method: post
           cors: true
+addPersonalInfo:
+    handler: employee/addPersonalInfo.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+      - http:
+          path: employee/addPersonalInfo
+          method: post
+          cors: true
