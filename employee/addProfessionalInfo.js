@@ -4,127 +4,65 @@ exports.handler = async (event) => {
 	const requestBody = JSON.parse(event.body);
 	const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 	const currentTimestamp = new Date().toISOString();
-	const personalInfoQuery = `
-            INSERT INTO employee 
-                ( first_name, last_name, email, work_email, gender, dob, number, emergency_number,
-                highest_qualification, org_id, invitation_status )
-            VALUES
-                ($1,$2,$3,$4,$5,$6,$7, $8, $9, $10, $11)
-            returning *
-            `;
-	const empAddressQuery = `
-            INSERT INTO address
-                (address_line_1, address_line_2, landmark, country, state ,city,zipcode, emp_id)
-            VALUES
-                ($1,$2,$3,$4,$5,$6,$7, $8)
-            returning *
-            `;
-
-    const empProfessionalQuery = `
-            INSERT INTO emp_detail
-                (emp_id, emp_type_id)
-            VALUES
-                ($1,$2)
-            returning *
+	const empProfessionalQuery = `
+            UPDATE emp_detail AS ed
+            SET
+                designation_id = $1,
+                pf = $2,
+                uan = $3,
+                department_id = $4,
+                reporting_manager_id = $5,
+                work_location = $6,
+                start_date = $7
+            FROM
+                emp_designation AS des,
+                department AS dep,
+                employee AS rm
+            WHERE
+                ed.emp_id = $8
+                AND des.id = $1
+                AND dep.id = $4
+                AND rm.id = $5
+            RETURNING
+                ed.*,
+                des.id as designation_id,
+                des.designation as designation,
+                dep.id as department_id,
+                dep.name as department,
+                rm.id as maanger_id, 
+                rm.first_name as maanger_first_name, 
+                rm.last_name as maanger_last_name,
+                rm.image as image
             `;
 	const client = await connectToDatabase();
 	await client.query("BEGIN");
 	try {
-        const personalInfoQueryResult = await new Promise((resolve, reject) => {
-            client.query(personalInfoQuery, [
-                requestBody.first_name,
-                requestBody.last_name,
-                requestBody.email,
-                requestBody.work_email,
-                requestBody.gender,
-                requestBody.dob,
-                requestBody.number,
-                requestBody.emergency_number,
-                requestBody.highest_qualification,
-                org_id,
-                "DRAFT"
-            ], (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
-    
-        // Execute the second and third queries in parallel
-        const [empAddressQueryResult, empProfessionalQueryResult] = await Promise.all([
-            new Promise((resolve, reject) => {
-                client.query(empAddressQuery, [
-                    requestBody.address_line_1,
-                    requestBody.address_line_2,
-                    requestBody.landmark,
-                    requestBody.country,
-                    requestBody.state,
-                    requestBody.city,
-                    requestBody.zipcode,
-                    personalInfoQueryResult.rows[0].id
-                ], (err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                });
-            }),
-            new Promise((resolve, reject) => {
-                client.query(empProfessionalQuery, [
-                    personalInfoQueryResult.rows[0].id,
-                    requestBody.emp_type
-                ], (err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                });
-            })
-        ]);
-        await client.query("COMMIT");
-        const res = {
-            personalInfoQueryResult: {
-                ...personalInfoQueryResult.rows[0],
-                id: undefined, 
-                emp_detail_id: undefined,
-                current_task_id: undefined,
-                access_token: undefined,
-                refresh_token: undefined,
-                role_id: undefined,
-                invitation_status: undefined,
-                org_id: undefined,
-                
-            },
-            empAddressQueryResult: {
-                ...empAddressQueryResult.rows[0],
-                id: undefined,
-                emp_id: undefined,
-            },
-            empProfessionalQueryResult: {
+		const empProfessionalQueryResult = await client.query(empProfessionalQuery, [
+			requestBody.designation_id,
+			requestBody.pf,
+			requestBody.uan,
+			requestBody.department_id,
+			requestBody.reporting_manager_id,
+			requestBody.work_location,
+			requestBody.start_date,
+            requestBody.emp_id
+		]);
+        const data = {
+            professionalInfo : {
                 ...empProfessionalQueryResult.rows[0],
-                id: undefined,
-                emp_id: undefined,
-                designation_id: undefined,
-                reporting_manager_id: undefined,
-                emp_type_id: undefined,
-                employee_id: undefined,
-                
+                id : undefined,
+                emp_id : undefined
             }
         }
+		await client.query("COMMIT");
 		return {
 			statuscode: 200,
 			headers: {
 				Access_Control_Allow_Origin: "*",
 			},
-			body: JSON.stringify({ 
-                ...res.personalInfoQueryResult,
-                ...res.empAddressQueryResult,
-                ...res.empProfessionalQueryResult,
-             }),
+			body: JSON.stringify({
+				...data.professionalInfo
+			}),
 		};
 	} catch (error) {
 		await client.query("ROLLBACK");
@@ -139,6 +77,6 @@ exports.handler = async (event) => {
 			}),
 		};
 	} finally {
-        await client.end();
+		await client.end();
 	}
 };
