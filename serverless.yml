@@ -17,4 +17,5 @@ functions:
     - ${file(./employee/function.yml)}
     - ${file(./department/function.yml)}
     - ${file(./Dashboard/function.yml)}
+    - ${file(./emp_type/function.yml)}
     
