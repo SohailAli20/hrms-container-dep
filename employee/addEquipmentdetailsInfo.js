@@ -18,7 +18,7 @@ exports.handler = async (event) => {
 	try {
         const insertedEquipment = []
 		for (const equipment of equipmentDetails) {
-            const empProfessionalQueryResult = await client.query(
+            const addEquipmentQueryResult = await client.query(
                 addEquipmentQuery,
                 [
                     equipment.owner,
@@ -30,14 +30,9 @@ exports.handler = async (event) => {
                     equipment.emp_id,
                 ]
             );
-             insertedEquipment.push (empProfessionalQueryResult.rows[0]);
-        }``
-		// const data = {
-		// 	professionalInfo: {
-		// 		...empProfessionalQueryResult.rows[0],
-		// 		emp_id: undefined,
-		// 	},
-		// };
+             insertedEquipment.push (addEquipmentQueryResult.rows[0]);
+        }
+
 		await client.query("COMMIT");
 		return {
 			statuscode: 200,

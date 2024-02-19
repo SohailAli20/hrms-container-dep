@@ -47,5 +47,13 @@ addEquipmentdetailsInfo:
           path: employee/addEquipmentdetailsInfo
           method: put
           cors: true
+addDocument:
+    handler: employee/addDocument.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+      - http:
+          path: employee/addDocument
+          method: put
+          cors: true
 
           
