@@ -1,9 +1,43 @@
 const { connectToDatabase } = require("../../db/dbConnector");
+const { z } = require("zod");
 
 exports.handler = async (event) => {
 	const requestBody = JSON.parse(event.body);
 	const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 	const currentTimestamp = new Date().toISOString();
+
+    const requestBodySchema = z.object({
+        first_name: z.string().min(3,{message: "first_name must be atleast 3 charachters long"}),
+        last_name: z.string().min(3,{message:"last_name must be atleast 3 charachters long"}),
+        email: z.string().email(),
+        work_email: z.string().email(),
+        gender: z.string().min(1),
+        dob: z.string().datetime(),
+        number: z.string(),
+        emergency_number: z.string(),
+        highest_qualification: z.string(),
+        address_line_1: z.string(),
+        address_line_2: z.string(),
+        landmark: z.string(),
+        country: z.string(),
+        state: z.string(),
+        city: z.string(),
+        zipcode: z.string(),
+    });
+
+    const result = requestBodySchema.safeParse(requestBody);
+	if (!result.success) {
+		return {
+			statusCode: 400,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+			},
+			body: JSON.stringify({
+				error: result.error.formErrors.fieldErrors,
+			}),
+		};
+	}
+
 	const personalInfoQuery = `
             INSERT INTO employee 
                 ( first_name, last_name, email, work_email, gender, dob, number, emergency_number,

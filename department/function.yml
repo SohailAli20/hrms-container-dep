@@ -3,7 +3,7 @@ addDepartment:
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /add-department
+              path: /department
               method: post
               cors: true
 
@@ -12,7 +12,7 @@ getDepartment:
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /get-department
+              path: /department
               method: get
               cors: true
 
@@ -21,6 +21,6 @@ updateDepartment:
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /update-department/{id}
+              path: /department/{id}
               method: put
               cors: true                            
