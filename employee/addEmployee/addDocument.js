@@ -1,9 +1,30 @@
 const { connectToDatabase } = require("../../db/dbConnector");
+const { z } = require("zod");
 
 exports.handler = async (event) => {
 	const documents = JSON.parse(event.body);
 	const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 	const currentTimestamp = new Date().toISOString();
+
+	const requestBodySchema = z.array(z.object({
+        name: z.string(),
+        url: z.number().url(),
+		emp_id: z.string().uuid()
+    }));
+
+    const result = requestBodySchema.safeParse(requestBody);
+	if (!result.success) {
+		return {
+			statusCode: 400,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+			},
+			body: JSON.stringify({
+				error: result.error.formErrors.fieldErrors,
+			}),
+		};
+	}
+
 	const addDocumentQuery = {
                 name: "add-document",
         		text: `
