@@ -12,7 +12,7 @@ exports.handler = async (event) => {
 		emp_id: z.string().uuid()
     }));
 
-    const result = requestBodySchema.safeParse(requestBody);
+    const result = requestBodySchema.safeParse(documents);
 	if (!result.success) {
 		return {
 			statusCode: 400,
