@@ -35,7 +35,7 @@ exports.handler = async (event) => {
 
 		await client.query("COMMIT");
 		return {
-			statuscode: 200,
+			statusCode: 200,
 			headers: {
 				Access_Control_Allow_Origin: "*",
 			},
