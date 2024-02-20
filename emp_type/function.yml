@@ -3,7 +3,7 @@ addEmp_type:
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /add-emp_type
+              path: /empType
               method: post
               cors: true
 
@@ -12,7 +12,7 @@ getEmp_type:
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /get-emp_type
+              path: /empType
               method: get
               cors: true 
 
@@ -21,6 +21,6 @@ updateEmp_type:
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /update-emp_type/{id}
+              path: /empType/{id}
               method: put
               cors: true                                          
