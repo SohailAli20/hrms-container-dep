@@ -21,24 +21,22 @@ exports.handler = async (event) => {
     }
     const client = await connectToDatabase();
     try {
-        await client.connect();
         let query = 'UPDATE emp_type SET type = $1';
         let values = [type];
         if (org_id) {
             query += ', org_id = $2';
             values.push(org_id);
         }
-        query += ' WHERE id = $3';
+        query += ' WHERE id = $3 RETURNING *';
         values.push(id);
-        await client.query(query, values);
+        const result = await client.query(query, values);
+        const updatedEmpType = result.rows[0];
         return {
             statusCode: 200,
             headers: {
                 "Access-Control-Allow-Origin": "*",
             },
-            body: JSON.stringify({
-                message: "Emp_type updated successfully",
-            }),
+            body: JSON.stringify(updatedEmpType),
         };
     } catch (error) {
         return {
