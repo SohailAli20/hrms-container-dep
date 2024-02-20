@@ -12,7 +12,7 @@ exports.handler = async (event) => {
         email: z.string().email(),
         work_email: z.string().email(),
         gender: z.string().min(1),
-        dob: z.string().datetime(),
+        dob: z.coerce.date(),
         number: z.string(),
         emergency_number: z.string(),
         highest_qualification: z.string(),
@@ -119,11 +119,13 @@ exports.handler = async (event) => {
                 });
             })
         ]);
-        await client.query("COMMIT");
+        const dobDate = personalInfoQueryResult.rows[0].dob.toISOString();
+        const dobWithoutTime = dobDate.slice(0, 10);
         const res = {
             personalInfoQueryResult: {
                 ...personalInfoQueryResult.rows[0],
                 id: undefined, 
+                dob: dobWithoutTime,
                 emp_detail_id: undefined,
                 current_task_id: undefined,
                 access_token: undefined,
@@ -149,10 +151,11 @@ exports.handler = async (event) => {
                 
             }
         }
+        await client.query("COMMIT");
 		return {
-			statusCode: 200,
+            statusCode: 200,
 			headers: {
-				Access_Control_Allow_Origin: "*",
+                Access_Control_Allow_Origin: "*",
 			},
 			body: JSON.stringify({ 
                 ...res.personalInfoQueryResult,

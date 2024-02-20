@@ -15,7 +15,7 @@ searchEmployee:
           method: get
           cors: true
 
-getEmployee:
+searchByName:
     handler: employee/searchByName.handler
     role: ${env:LAMBDA_ROLE}
     events:
