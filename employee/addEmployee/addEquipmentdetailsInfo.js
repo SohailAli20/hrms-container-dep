@@ -1,9 +1,36 @@
 const { connectToDatabase } = require("../../db/dbConnector");
+const { z } = require("zod");
 
 exports.handler = async (event) => {
 	const equipmentDetails = JSON.parse(event.body);
 	const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 	const currentTimestamp = new Date().toISOString();
+
+	const requestBodySchema = z.array(z.object({
+        owner: z.boolean({
+			required_error: "isActive is required",
+			invalid_type_error: "isActive must be a boolean",
+		}),
+        device_type_id: z.number().int(),
+        manufacturer: z.string(),
+        serial_number: z.string(),
+        note: z.string(),
+        supply_date: z.string().datetime(),
+        emp_id: z.string().uuid()
+    }));
+
+    const result = requestBodySchema.safeParse(equipmentDetails);
+	if (!result.success) {
+		return {
+			statusCode: 400,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+			},
+			body: JSON.stringify({
+				error: result.error.formErrors.fieldErrors,
+			}),
+		};
+	}
 	const addEquipmentQuery = {
                 name: "add-equipment",
         		text: `
