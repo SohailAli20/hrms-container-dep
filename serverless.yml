@@ -20,4 +20,5 @@ functions:
     - ${file(./department/function.yml)}
     - ${file(./dashboard/function.yml)}
     - ${file(./empType/function.yml)}
+    - ${file(./organisation/function.yml)}
     
