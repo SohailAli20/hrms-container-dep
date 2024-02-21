@@ -1,5 +1,5 @@
-getEmployeeById:
-    handler: employee/getEmployeeById.handler
+getEmployee:
+    handler: employee/getEmployee.handler
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
