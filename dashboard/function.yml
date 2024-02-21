@@ -1,5 +1,5 @@
 dashboardStats:
-    handler: dashboard/getEmployee.handler
+    handler: dashboard/dashboardStats.handler
     role: ${env:LAMBDA_ROLE}
     events:
       - http:
