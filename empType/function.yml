@@ -1,5 +1,5 @@
 addEmptype:
-    handler: emp_type/addEmpType.handler
+    handler: empType/addEmpType.handler
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
@@ -8,7 +8,7 @@ addEmptype:
               cors: true
 
 getEmptype:
-    handler: emp_type/getEmpType.handler
+    handler: empType/getEmpType.handler
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
@@ -17,7 +17,7 @@ getEmptype:
               cors: true 
 
 updateEmptype:
-    handler: emp_type/updateEmpType.handler
+    handler: empType/updateEmpType.handler
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
