@@ -81,6 +81,8 @@ exports.handler = async (event) => {
                 error: error,
             }),
         };
+    } finally {
+        await client.end();
     }
 };
 
