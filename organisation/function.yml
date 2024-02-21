@@ -3,6 +3,6 @@ updateOrganization:
     role: ${env:LAMBDA_ROLE}
     events:
       - http:
-          path: /organization/{orgId}
+          path: /organization 
           method: put
           cors: true
