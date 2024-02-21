@@ -5,13 +5,14 @@ getEmployee:
         - http:
               path: /employee/{id}
               method: get
+              cors: true
 
-searchEmployee:
-    handler: employee/searchEmployee.handler
+getEmployees:
+    handler: employee/getEmployees.handler
     role: ${env:LAMBDA_ROLE}
     events:
       - http:
-          path: /searchEmployee
+          path: /employee
           method: get
           cors: true
 
@@ -20,5 +21,6 @@ searchByName:
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /employee
+              path: /searchByName
               method: get
+              cors: true

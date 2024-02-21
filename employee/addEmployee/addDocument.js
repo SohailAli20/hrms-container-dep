@@ -2,17 +2,19 @@ const { connectToDatabase } = require("../../db/dbConnector");
 const { z } = require("zod");
 
 exports.handler = async (event) => {
-	const documents = JSON.parse(event.body);
-	const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
-	const currentTimestamp = new Date().toISOString();
-
-	const requestBodySchema = z.array(z.object({
-        name: z.string(),
-        url: z.number().url(),
-		emp_id: z.string().uuid()
-    }));
-
-    const result = requestBodySchema.safeParse(documents);
+	const requestBody = JSON.parse(event.body);
+	console.log(requestBody)
+	const requestBodySchema = z.object({
+        emp_id: z.string().uuid({
+			message : "invalid employee id"
+		}),
+        documents: z.array(z.object({
+			name: z.string(),
+			url:  z.string().url(),
+		})),
+    });
+	console.log("1")
+    const result = requestBodySchema.safeParse(requestBody);
 	if (!result.success) {
 		return {
 			statusCode: 400,
@@ -24,7 +26,7 @@ exports.handler = async (event) => {
 			}),
 		};
 	}
-
+	console.log("2")
 	const addDocumentQuery = {
                 name: "add-document",
         		text: `
@@ -35,17 +37,20 @@ exports.handler = async (event) => {
                         RETURNING *
                     `,
 	};
+	console.log("3")
 	const client = await connectToDatabase();
+	console.log("4")
+	console.log(requestBody)
 	await client.query("BEGIN");
 	try {
         const insertedDocument = []
-		for (const document of documents) {
+		for (const document of requestBody.documents) {
             const addDocumentQueryResult = await client.query(
                 addDocumentQuery,
                 [
                     document.name,
                     document.url,
-                    document.emp_id
+                    requestBody.emp_id
                 ]
             );
             const { emp_id, ...insertedDataWithoutEmpId } = addDocumentQueryResult.rows[0];
