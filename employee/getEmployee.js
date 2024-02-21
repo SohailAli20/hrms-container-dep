@@ -20,41 +20,41 @@ exports.handler = async (event) => {
     try {
         const client = await connectToDatabase();
         const query = `
-            SELECT 
-                e.*, 
-                a.*, 
-                ed.*, 
-                d.name AS department_name, 
-                et.type AS emp_type, 
+            SELECT
+                e.*,
+                a.*,
+                ed.*,
+                d.name AS department_name,
+                et.type AS emp_type,
                 edg.id AS emp_designation_id,
-                edg.designation AS emp_designation, 
-                m.first_name AS reporting_manager_first_name, 
-                m.last_name AS reporting_manager_last_name, 
+                edg.designation AS emp_designation,
+                m.first_name AS reporting_manager_first_name,
+                m.last_name AS reporting_manager_last_name,
                 doc.id AS document_id,
                 doc.*,
-                eq.*, 
+                eq.*,
                 dt.name AS device_type_name
-            FROM 
+            FROM
                 employee e
-            LEFT JOIN 
-                address a ON e.address_id = a.id
-            LEFT JOIN 
-                emp_detail ed ON e.emp_detail_id = ed.id
-            LEFT JOIN 
+            LEFT JOIN
+                address a ON e.id = a.emp_id
+            LEFT JOIN
+                emp_detail ed ON e.id = ed.emp_id
+            LEFT JOIN
                 department d ON ed.department_id = d.id
-            LEFT JOIN 
+            LEFT JOIN
                 emp_type et ON ed.emp_type_id = et.id
-            LEFT JOIN 
+            LEFT JOIN
                 emp_designation edg ON ed.designation_id = edg.id
-            LEFT JOIN 
+            LEFT JOIN
                 employee m ON ed.reporting_manager_id = m.id
-            LEFT JOIN 
+            LEFT JOIN
                 document doc ON doc.emp_id = e.id
-            LEFT JOIN 
+            LEFT JOIN
                 equipment eq ON eq.emp_id = e.id
-            LEFT JOIN 
+            LEFT JOIN
                 device_type dt ON eq.device_type_id = dt.id
-            WHERE 
+            WHERE
                 e.id = $1
         `;
 
@@ -81,6 +81,8 @@ exports.handler = async (event) => {
                 error: error,
             }),
         };
+    } finally {
+        await client.end();
     }
 };
 
@@ -97,6 +99,7 @@ function formatResult(rows) {
             formattedResult.personal_information = {
                 emp_id: row.emp_id,
                 email: row.email,
+                image: "",
                 password: row.password,
                 work_email: row.work_email,
                 first_name: row.first_name,
@@ -121,19 +124,19 @@ function formatResult(rows) {
             formattedResult.professional_information = {
                 emp_detail_id: row.emp_detail_id,
                 designation_id: row.designation_id,
-                pf: row.pf,
-                uan: row.uan,
+                pf: row.pf || "",
+                uan: row.uan || "",
                 department_id: row.department_id,
                 reporting_manager_id: row.reporting_manager_id,
                 emp_type_id: row.emp_type_id,
-                work_location: row.work_location,
+                work_location: row.work_location || "",
                 start_date: row.start_date,
                 department_name: row.department_name,
                 emp_type: row.emp_type,
                 emp_designation_id: row.emp_designation_id,
                 emp_designation: row.emp_designation,
-                reporting_manager_first_name: row.reporting_manager_first_name,
-                reporting_manager_last_name: row.reporting_manager_last_name,
+                reporting_manager_first_name: row.reporting_manager_first_name || "",
+                reporting_manager_last_name: row.reporting_manager_last_name || "",
             };
         }
 

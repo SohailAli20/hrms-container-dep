@@ -45,10 +45,10 @@ exports.handler = async (event) => {
             Employee_Name: `${row.first_name} ${row.last_name}`,
             Employee_Id: row.id,
             Email_Address: row.work_email,
-            Designation: row.designation,
-            Employee_Type: row.emp_type,
-            Department: row.department,
-            Start_Date: row.start_date,
+            Designation: row.designation|| "",
+            Employee_Type: row.emp_type || "",
+            Department: row.department  || "",
+            Start_Date: row.start_date  || "",
         }));
 
         return {
