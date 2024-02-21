@@ -2,7 +2,7 @@ const { connectToDatabase } = require("../db/dbConnector");
 const { z } = require("zod");
 
 exports.handler = async (event, context, callback) => {
-    const id = event.pathParameters.org_id;
+    const id = event.pathParameters.orgId;
     if (!id) {
         return {
             "statusCode": 400,

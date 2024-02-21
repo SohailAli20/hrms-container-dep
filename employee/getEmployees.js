@@ -2,13 +2,22 @@ const { connectToDatabase } = require("../db/dbConnector");
 const { z } = require("zod");
 
 exports.handler = async (event) => {
-    const page = event.queryStringParameters?.page ?? null
+    let page = event.queryStringParameters?.page ?? null
+    page = parseInt(page);
+    const limit = 10;
     let offset = (page - 1) * 10;
     offset = Math.max(offset, 0);
     const client = await connectToDatabase();
     console.log(offset)
-    try {
-        const query = `
+    const totalPagesQuery = `
+                SELECT COUNT(*) AS total_count
+                FROM employee e
+                LEFT JOIN emp_detail ed2 ON e.emp_detail_id = ed2.id
+                LEFT JOIN emp_designation ed ON ed2.designation_id = ed.id
+                LEFT JOIN emp_type et ON ed2.emp_type_id = et.id
+                LEFT JOIN department d ON ed2.department_id = d.id
+    `;
+    const query = `
                 SELECT
                     e.id,
                     e.first_name,
@@ -28,16 +37,19 @@ exports.handler = async (event) => {
                 ORDER BY e.first_name 
                 LIMIT 10 OFFSET ${offset}
         `;
-
+    try {
+        const totalPagesResult = await client.query(totalPagesQuery)
+        const totalRecords = totalPagesResult.rows[0].total_count;
+        const totalPages = Math.ceil(totalRecords / limit);
         const EmployeeMetaData = await client.query(query);
         const resultArray = EmployeeMetaData.rows.map(row => ({
-            Employee_Name: `${row.first_name} ${row.last_name}`,
-            Employee_Id: row.id,
-            Email_Address: row.work_email,
-            Designation: row.designation,
-            Employee_Type: row.emp_type,
-            Depertment: row.department,
-            Start_Date: row.start_date
+            employee_name: `${row.first_name} ${row.last_name}`,
+            employee_id: row.id,
+            email: row.work_email,
+            designation: row.designation,
+            employee_type: row.emp_type,
+            department: row.department,
+            start_date: row.start_date
         }));
 
         return {
@@ -45,7 +57,11 @@ exports.handler = async (event) => {
             headers: {
                 "Access-Control-Allow-Origin": "*",
             },
-            body: JSON.stringify(resultArray),
+            body: JSON.stringify({
+                totalPages: totalPages,
+                currentPage: page,
+                employees: resultArray
+            })
         };
     } catch (e) {
         return {
