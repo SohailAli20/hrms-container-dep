@@ -24,17 +24,16 @@ exports.handler = async (event) => {
     }
     const client = await connectToDatabase();
     try {
-        const query = 'INSERT INTO emp_type (type, org_id) VALUES ($1, $2)';
+        const query = 'INSERT INTO emp_type (type, org_id) VALUES ($1, $2)RETURNING *';
         const values = [type, org_id];
-        await client.query(query, values);
+        const result = await client.query(query, values);
+        const insertedEmpType = result.rows[0];
         return {
             statusCode: 201,
             headers: {
                 "Access-Control-Allow-Origin": "*",
             },
-            body: JSON.stringify({
-                message: "Emp_type added successfully",
-            }),
+            body: JSON.stringify(insertedEmpType),
         };
     } catch (error) {
         return {

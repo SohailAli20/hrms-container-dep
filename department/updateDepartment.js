@@ -25,7 +25,6 @@ exports.handler = async (event) => {
     }
     const client = await connectToDatabase();
     try {
-        await client.connect();
         const result = await client.query(
             `UPDATE department SET name = $1, org_id = $2 WHERE id = $3 RETURNING *`,
             [name, org_id, departmentId]
