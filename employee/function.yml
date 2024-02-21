@@ -24,3 +24,12 @@ searchByName:
               path: /searchByName
               method: get
               cors: true
+
+updateEmployee:
+    handler: employee/updateEmployee.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+        - http:
+              path: /employee/{id}
+              method: put 
+              cors: true
