@@ -1,0 +1,8 @@
+updateOrganization:
+    handler: organisation/updateOrganization.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+      - http:
+          path: /updateOrganization/{org_id}
+          method: put
+          cors: true
