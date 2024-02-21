@@ -18,6 +18,6 @@ functions:
     - ${file(./employee/addEmployee/function.yml)}
     - ${file(./employee/function.yml)}
     - ${file(./department/function.yml)}
-    - ${file(./Dashboard/function.yml)}
-    - ${file(./emp_type/function.yml)}
+    - ${file(./dashboard/function.yml)}
+    - ${file(./empType/function.yml)}
     
