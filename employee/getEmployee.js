@@ -16,9 +16,9 @@ exports.handler = async (event) => {
             }),
         };
     }
+    const client = await connectToDatabase();
 
     try {
-        const client = await connectToDatabase();
         const query = `
             SELECT
                 e.*,
