@@ -23,7 +23,8 @@ exports.handler = async (event) => {
         state: z.string(),
         city: z.string(),
         zipcode: z.string(),
-        emp_type: z.number().int()
+        emp_type: z.number().int(),
+        image: z.string().url()
     });
 
     const result = requestBodySchema.safeParse(requestBody);
@@ -40,12 +41,12 @@ exports.handler = async (event) => {
 	}
 
 	const personalInfoQuery = `
-            INSERT INTO employee 
-                ( first_name, last_name, email, work_email, gender, dob, number, emergency_number,
-                highest_qualification, org_id, invitation_status )
-            VALUES
-                ($1,$2,$3,$4,$5,$6,$7, $8, $9, $10, $11)
-            returning *
+        INSERT INTO employee 
+            ( first_name, last_name, email, work_email, gender, dob, number, emergency_number,
+            highest_qualification, image,  org_id, invitation_status )
+        VALUES
+            ($1,$2,$3,$4,$5,$6,$7, $8, $9, $10, $11, $12)
+        returning *
             `;
 	const empAddressQuery = `
             INSERT INTO address
@@ -76,6 +77,7 @@ exports.handler = async (event) => {
                 requestBody.number,
                 requestBody.emergency_number,
                 requestBody.highest_qualification,
+                requestBody.image,
                 org_id,
                 "DRAFT"
             ], (err, res) => {
