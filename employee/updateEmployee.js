@@ -6,7 +6,21 @@ exports.handler = async (event) => {
 
 	const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 	const currentTimestamp = new Date().toISOString();
+
     const empId = event.pathParameters.id;
+    const idSchema = z.string().uuid({ message: "Invalid employee id" });
+    const isUuid = idSchema.safeParse(empId);
+    if (!isUuid.success) {
+        return {
+            statusCode: 400,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+            },
+            body: JSON.stringify({
+                error: isUuid.error.issues[0].message,
+            }),
+        };
+    }
 
     const requestBodySchema = z.object({
         first_name: z.string().min(3,{message: "first_name must be atleast 3 charachters long"}),
@@ -24,7 +38,8 @@ exports.handler = async (event) => {
         country: z.string(),
         state: z.string(),
         city: z.string(),
-        zipcode: z.string()
+        zipcode: z.string(),
+        image: z.string().url()
     });
 
     const result = requestBodySchema.safeParse(requestBody);
@@ -51,8 +66,9 @@ exports.handler = async (event) => {
             number = $7,
             emergency_number = $8,
             highest_qualification = $9,
-            updated_at = $10
-        WHERE id = $11 RETURNING *
+            image = $10,
+            updated_at = $11
+        WHERE id = $12 RETURNING *
         `;
 
     const addressQuery = `
@@ -81,6 +97,7 @@ exports.handler = async (event) => {
                 requestBody.number,
                 requestBody.emergency_number,
                 requestBody.highest_qualification,
+                requestBody.image,
                 currentTimestamp,
                 empId
             ]);
@@ -107,7 +124,7 @@ exports.handler = async (event) => {
 			headers: {
 				Access_Control_Allow_Origin: "*",
 			},
-			body: JSON.stringify({ res }),
+			body: JSON.stringify(res),
 		};
 	} catch (error) {
 		await client.query("ROLLBACK");

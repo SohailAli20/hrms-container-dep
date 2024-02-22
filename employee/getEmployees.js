@@ -3,6 +3,9 @@ const { z } = require("zod");
 
 exports.handler = async (event) => {
     let page = event.queryStringParameters?.page ?? null
+    if (page == null){
+        page = 1;
+    }
     page = parseInt(page);
     const limit = 10;
     let offset = (page - 1) * 10;
