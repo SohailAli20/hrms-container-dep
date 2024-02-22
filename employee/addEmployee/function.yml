@@ -7,7 +7,7 @@ addPersonalInfo:
           method: post
           cors: true
 addProfessionalInfo:
-    handler: employee/addEmployee/professionalInfo.handler
+    handler: employee/addEmployee/addProfessionalInfo.handler
     role: ${env:LAMBDA_ROLE}
     events:
       - http:
