@@ -35,27 +35,6 @@ exports.handler = async (event, context, callback) => {
     });
 
     try {
-        const res = await client.query(`SELECT * FROM employee WHERE work_email = $1`, [req.email]);
-        const result = res.rows[0];
-        const PersonalDetails = {
-            id: result.id,
-            email: result.email,
-            work_email: result.work_email,
-            first_name: result.first_name,
-            last_name: result.last_name,
-            gender: result.gender,
-            dob: result.dob,
-            number: result.number,
-            emergency_number: result.emergency_number,
-            highest_qualification: result.highest_qualification,
-            emp_detail_id: result.emp_detail_id,
-            description: result.description,
-            current_task_id: result.current_task_id,
-            invitation_status: result.invitation_status,
-            org_id: result.org_id,
-            image: result.image,
-            email_verified: result.email_verified
-        };
         const input = {
             UserPoolId: process.env.COGNITO_POOL_ID,
             ClientId: process.env.COGNITO_CLIENT_ID,
@@ -96,7 +75,27 @@ exports.handler = async (event, context, callback) => {
         }
 
         await client.query(`UPDATE employee SET access_token = $1, refresh_token = $2 WHERE work_email = $3`, [accessToken, refreshToken, req.email]);
-
+		const res = await client.query(`SELECT * FROM employee WHERE work_email = $1`, [req.email]);
+        const result = res.rows[0];
+        const PersonalDetails = {
+            id: result.id,
+            email: result.email,
+            work_email: result.work_email,
+            first_name: result.first_name,
+            last_name: result.last_name,
+            gender: result.gender,
+            dob: result.dob,
+            number: result.number,
+            emergency_number: result.emergency_number,
+            highest_qualification: result.highest_qualification,
+            emp_detail_id: result.emp_detail_id,
+            description: result.description,
+            current_task_id: result.current_task_id,
+            invitation_status: result.invitation_status,
+            org_id: result.org_id,
+            image: result.image,
+            email_verified: result.email_verified
+        };
         return {
             statusCode: 200,
             headers: {
