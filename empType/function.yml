@@ -5,7 +5,7 @@ addEmptype:
         - http:
               path: /empType
               method: post
-              cors: true
+            #   cors: true
 
 getEmptype:
     handler: empType/getEmpType.handler
@@ -23,4 +23,4 @@ updateEmptype:
         - http:
               path: /empType/{id}
               method: put
-              cors: true                                          
+            #   cors: true                                          

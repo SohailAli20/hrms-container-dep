@@ -23,6 +23,7 @@ exports.handler = async (event) => {
         state: z.string(),
         city: z.string(),
         zipcode: z.string(),
+        emp_type: z.number().int()
     });
 
     const result = requestBodySchema.safeParse(requestBody);
