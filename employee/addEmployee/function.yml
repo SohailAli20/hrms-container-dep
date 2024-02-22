@@ -5,7 +5,7 @@ addPersonalInfo:
       - http:
           path: employee/personalInfo
           method: post
-          cors: true
+          # cors: true
 addProfessionalInfo:
     handler: employee/addEmployee/addProfessionalInfo.handler
     role: ${env:LAMBDA_ROLE}
@@ -13,7 +13,7 @@ addProfessionalInfo:
       - http:
           path: employee/professionalInfo
           method: put
-          cors: true
+          # cors: true
 addEquipmentdetailsInfo:
     handler: employee/addEmployee/addEquipmentdetailsInfo.handler
     role: ${env:LAMBDA_ROLE}
@@ -21,7 +21,7 @@ addEquipmentdetailsInfo:
       - http:
           path: employee/equipmentInfo
           method: put
-          cors: true
+          # cors: true
 addDocument:
     handler: employee/addEmployee/addDocument.handler
     role: ${env:LAMBDA_ROLE}
@@ -29,6 +29,6 @@ addDocument:
       - http:
           path: employee/document
           method: put
-          cors: true
+          # cors: true
 
           

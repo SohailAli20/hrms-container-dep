@@ -5,7 +5,7 @@ signup:
         - http:
               path: /signup
               method: post
-              cors: true
+            #   cors: true
 signin:
     handler: auth/signin.handler
     role: ${env:LAMBDA_ROLE}
@@ -13,4 +13,4 @@ signin:
         - http:
               path: /signin
               method: post
-              cors: true
+            #   cors: true
