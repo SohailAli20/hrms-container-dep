@@ -21,4 +21,6 @@ functions:
     - ${file(./dashboard/function.yml)}
     - ${file(./empType/function.yml)}
     - ${file(./organisation/function.yml)}
+    - ${file(./organisation/function.yml)}
+    - ${file(./designation/function.yml)}
     
