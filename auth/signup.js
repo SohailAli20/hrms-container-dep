@@ -37,6 +37,7 @@ exports.handler = async (event, context, callback) => {
 	});
 	try {
 		const org_id = uuid();
+		const user_id = uuid();
 		const input = {
 			UserPoolId: process.env.COGNITO_POOL_ID,
 			Username: req.email,
@@ -46,13 +47,16 @@ exports.handler = async (event, context, callback) => {
 					Name: "custom:org_id",
 					Value: org_id,
 				},
+				{
+					Name: "custom:user_id",
+					Value: user_id,
+				}
 			],
 			// MessageAction: "RESEND"
 		};
 		const createUserResponse = await cognitoClient.send(
 			new AdminCreateUserCommand(input)
 		);
-		console.log(JSON.stringify(" .. . .. .. ", createUserResponse));
 		const addUserToGroupParams = {
 			GroupName: "Admin",
 			Username : req.email,
@@ -61,7 +65,16 @@ exports.handler = async (event, context, callback) => {
 		const addUserToGroupResponse = await cognitoClient.send(
 			new AdminAddUserToGroupCommand(addUserToGroupParams)
 		);
-		console.log(JSON.stringify(addUserToGroupResponse));
+		await client.query(`INSERT INTO organisation(id) VALUES ($1)`,[org_id]);
+		await client.query(`INSERT INTO employee (id , work_email, invitation_status,org_id,email_verified) VALUES ($1,$2, 'SENT',$3,'NO')`, [user_id,req.email,org_id]);
+
+		return {
+			statusCode: 200,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+			},
+			body: JSON.stringify({message:"Successfully Signed-up"})
+		};
 	} catch (error) {
 		return {
 			statusCode: 500,
