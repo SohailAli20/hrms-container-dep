@@ -21,6 +21,6 @@ updateEmptype:
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /empType/{id}
+              path: /empType
               method: put
             #   cors: true                                          
