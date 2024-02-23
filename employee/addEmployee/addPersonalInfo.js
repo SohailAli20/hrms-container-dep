@@ -7,25 +7,25 @@ exports.handler = async (event) => {
 	const currentTimestamp = new Date().toISOString();
 
     const requestBodySchema = z.object({
-        first_name: z.string().min(3,{message: "first_name must be atleast 3 charachters long"}),
-        last_name: z.string().min(3,{message:"last_name must be atleast 3 charachters long"}),
-        email: z.string().email(),
-        work_email: z.string().email(),
+        first_name: z.string().min(3, { message: "first_name must be at least 3 characters long" }),
+        last_name: z.string().min(3, { message: "last_name must be at least 3 characters long" }),
+        email: z.string().email().optional(),
+        work_email: z.string().email().optional(),
         gender: z.string().min(1),
         dob: z.coerce.date(),
         number: z.string(),
-        emergency_number: z.string(),
-        highest_qualification: z.string(),
-        address_line_1: z.string(),
-        address_line_2: z.string(),
-        landmark: z.string(),
-        country: z.string(),
-        state: z.string(),
-        city: z.string(),
-        zipcode: z.string(),
-        emp_type: z.number().int(),
-        image: z.string().url()
-    });
+        emergency_number: z.string().optional(),
+        highest_qualification: z.string().optional(),
+        address_line_1: z.string().optional(),
+        address_line_2: z.string().optional(),
+        landmark: z.string().optional(),
+        country: z.string().optional(),
+        state: z.string().optional(),
+        city: z.string().optional(),
+        zipcode: z.string().optional(),
+        emp_type: z.number().int().optional(),
+        image: z.string().optional().default("")
+    });    
 
     const result = requestBodySchema.safeParse(requestBody);
 	if (!result.success) {
@@ -168,7 +168,7 @@ exports.handler = async (event) => {
                 ...res.personalInfoQueryResult,
                 ...res.empAddressQueryResult,
                 ...res.empProfessionalQueryResult,
-                id: personalInfoQueryResult.rows[0].id
+                id: personalInfoQueryResult.rows[0].id,
              }),
 		};
 	} catch (error) {
