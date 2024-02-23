@@ -61,8 +61,13 @@ exports.handler = async (event) => {
                 (emp_id, emp_type_id)
             VALUES
                 ($1,$2)
-            returning *
-            `;
+            RETURNING emp_detail.*, (
+                SELECT type
+                FROM emp_type
+                WHERE id = $2
+            ) AS emp_type_name
+        `;        
+        
 	const client = await connectToDatabase();
 	await client.query("BEGIN");
 	try {
@@ -127,7 +132,6 @@ exports.handler = async (event) => {
         const res = {
             personalInfoQueryResult: {
                 ...personalInfoQueryResult.rows[0],
-                id: undefined, 
                 dob: dobWithoutTime,
                 emp_detail_id: undefined,
                 current_task_id: undefined,
@@ -149,10 +153,8 @@ exports.handler = async (event) => {
                 emp_id: undefined,
                 designation_id: undefined,
                 reporting_manager_id: undefined,
-                emp_type_id: undefined,
                 employee_id: undefined,
-                
-            }
+            },
         }
         await client.query("COMMIT");
 		return {
@@ -164,6 +166,7 @@ exports.handler = async (event) => {
                 ...res.personalInfoQueryResult,
                 ...res.empAddressQueryResult,
                 ...res.empProfessionalQueryResult,
+                id: personalInfoQueryResult.rows[0].id
              }),
 		};
 	} catch (error) {
