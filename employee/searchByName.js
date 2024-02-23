@@ -42,13 +42,13 @@ exports.handler = async (event) => {
 
         const res = await client.query(query, [params]);
         const extractedData = res.rows.map((row) => ({
-            Employee_Name: `${row.first_name} ${row.last_name}`,
-            Employee_Id: row.id,
-            Email_Address: row.work_email,
-            Designation: row.designation|| "",
-            Employee_Type: row.emp_type || "",
-            Department: row.department  || "",
-            Start_Date: row.start_date  || "",
+            employee_name: `${row.first_name} ${row.last_name}`,
+            employee_id: row.id,
+            email_address: row.work_email,
+            designation: row.designation,
+            employee_type: row.emp_type,
+            department: row.department,
+            start_date: row.start_date,
         }));
 
         return {
