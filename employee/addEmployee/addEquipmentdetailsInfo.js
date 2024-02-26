@@ -15,7 +15,7 @@ exports.handler = async (event) => {
         manufacturer: z.string(),
         serial_number: z.string(),
         note: z.string(),
-        supply_date: z.string().datetime(),
+        supply_date:z.coerce.date(),
         emp_id: z.string().uuid()
     }));
 

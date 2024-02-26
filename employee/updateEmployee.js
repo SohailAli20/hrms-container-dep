@@ -28,7 +28,7 @@ exports.handler = async (event) => {
         email: z.string().email(),
         work_email: z.string().email(),
         gender: z.string().min(1),
-        dob: z.string().datetime(),
+        dob: z.coerce.date(),
         number: z.string(),
         emergency_number: z.string(),
         highest_qualification: z.string(),
