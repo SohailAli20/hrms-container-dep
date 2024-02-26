@@ -73,7 +73,6 @@ exports.handler = async (event, context) => {
 				}
 			};
 			const authResponse = await cognitoClient.send(new AdminInitiateAuthCommand(inputAuth));
-			console.log("authResponse",authResponse);
 			const newPassword = req.password;
 			const respondToAuthChallengeInput = {
                 ChallengeName: 'NEW_PASSWORD_REQUIRED',
@@ -110,7 +109,6 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ Message: "Successfully Signed-up",AccessToken : accessToken})
         };
     } catch (error) {
-        console.error("Error signing up user:", error);
         await client.query("ROLLBACK");
         const params = {
             UserPoolId: process.env.COGNITO_POOL_ID,
