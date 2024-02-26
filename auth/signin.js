@@ -13,7 +13,7 @@ exports.handler = async (event, context, callback) => {
         password: requestBody.password,
     };
     const reqSchema = z.object({
-        email: z.string(),
+        email: z.string().email(),
         password: z.string(),
     });
     const valResult = reqSchema.safeParse(req);
@@ -44,7 +44,6 @@ exports.handler = async (event, context, callback) => {
             }
         };
         const authResponse = await cognitoClient.send(new AdminInitiateAuthCommand(input));
-        console.log(JSON.stringify(authResponse));
         accessToken = authResponse.AuthenticationResult.AccessToken;
         refreshToken = authResponse.AuthenticationResult.RefreshToken;
         await client.query(`UPDATE employee SET access_token = $1, refresh_token = $2 WHERE work_email = $3`, [accessToken, refreshToken, req.email]);
@@ -79,8 +78,7 @@ exports.handler = async (event, context, callback) => {
                 "Access-Control-Allow-Origin": "*",
             },
             body: JSON.stringify({
-                message: "Successfully Signed-In" ,
-                result: PersonalDetails,
+                Result: PersonalDetails,
                 AccessToken: accessToken,
                 RefreshToken: refreshToken
             })
