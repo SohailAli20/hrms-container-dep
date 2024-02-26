@@ -7,32 +7,33 @@ exports.handler = async (event) => {
 	const currentTimestamp = new Date().toISOString();
 
     const requestBodySchema = z.object({
-        first_name: z.string().min(3,{message: "first_name must be atleast 3 charachters long"}),
-        last_name: z.string().min(3,{message:"last_name must be atleast 3 charachters long"}),
-        email: z.string().email(),
-        work_email: z.string().email(),
+        first_name: z.string().min(3, { message: "first_name must be at least 3 characters long" }),
+        last_name: z.string().min(3, { message: "last_name must be at least 3 characters long" }),
+        email: z.string().email().optional(),
+        work_email: z.string().email().optional(),
         gender: z.string().min(1),
         dob: z.coerce.date(),
         number: z.string(),
-        emergency_number: z.string(),
-        highest_qualification: z.string(),
-        address_line_1: z.string(),
-        address_line_2: z.string(),
-        landmark: z.string(),
-        country: z.string(),
-        state: z.string(),
-        city: z.string(),
-        zipcode: z.string(),
-        emp_type: z.number().int(),
-        image: z.string().url()
-    });
+        emergency_number: z.string().optional(),
+        highest_qualification: z.string().optional(),
+        address_line_1: z.string().optional(),
+        address_line_2: z.string().optional(),
+        landmark: z.string().optional(),
+        country: z.string().optional(),
+        state: z.string().optional(),
+        city: z.string().optional(),
+        zipcode: z.string().optional(),
+        emp_type: z.number().int().optional(),
+        image: z.string().optional().default("")
+    });    
 
     const result = requestBodySchema.safeParse(requestBody);
 	if (!result.success) {
 		return {
 			statusCode: 400,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
+				'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': true,
 			},
 			body: JSON.stringify({
 				error: result.error.formErrors.fieldErrors,
@@ -61,8 +62,13 @@ exports.handler = async (event) => {
                 (emp_id, emp_type_id)
             VALUES
                 ($1,$2)
-            returning *
-            `;
+            RETURNING emp_detail.*, (
+                SELECT type
+                FROM emp_type
+                WHERE id = $2
+            ) AS emp_type_name
+        `;        
+        
 	const client = await connectToDatabase();
 	await client.query("BEGIN");
 	try {
@@ -127,7 +133,6 @@ exports.handler = async (event) => {
         const res = {
             personalInfoQueryResult: {
                 ...personalInfoQueryResult.rows[0],
-                id: undefined, 
                 dob: dobWithoutTime,
                 emp_detail_id: undefined,
                 current_task_id: undefined,
@@ -149,21 +154,21 @@ exports.handler = async (event) => {
                 emp_id: undefined,
                 designation_id: undefined,
                 reporting_manager_id: undefined,
-                emp_type_id: undefined,
                 employee_id: undefined,
-                
-            }
+            },
         }
         await client.query("COMMIT");
 		return {
             statusCode: 200,
 			headers: {
-                Access_Control_Allow_Origin: "*",
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': true,
 			},
 			body: JSON.stringify({ 
                 ...res.personalInfoQueryResult,
                 ...res.empAddressQueryResult,
                 ...res.empProfessionalQueryResult,
+                id: personalInfoQueryResult.rows[0].id,
              }),
 		};
 	} catch (error) {
@@ -171,7 +176,8 @@ exports.handler = async (event) => {
 		return {
 			statusCode: 500,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
+				'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': true,
 			},
 			body: JSON.stringify({
 				message: error.message,

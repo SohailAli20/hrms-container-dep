@@ -24,7 +24,8 @@ exports.handler = async (event) => {
 		return {
 			statusCode: 400,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
+				'Access-Control-Allow-Origin': '*',
+      			'Access-Control-Allow-Credentials': true,
 			},
 			body: JSON.stringify({
 				error: result.error.formErrors.fieldErrors,
@@ -64,7 +65,8 @@ exports.handler = async (event) => {
 		return {
 			statusCode: 200,
 			headers: {
-				Access_Control_Allow_Origin: "*",
+				'Access-Control-Allow-Origin': '*',
+      			'Access-Control-Allow-Credentials': true,
 			},
 			body: JSON.stringify(
 				insertedEquipment),
@@ -74,7 +76,8 @@ exports.handler = async (event) => {
 		return {
 			statusCode: 500,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
+				'Access-Control-Allow-Origin': '*',
+      '			Access-Control-Allow-Credentials': true,
 			},
 			body: JSON.stringify({
 				message: error.message,
