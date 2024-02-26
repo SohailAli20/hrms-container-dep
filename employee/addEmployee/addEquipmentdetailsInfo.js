@@ -5,7 +5,7 @@ exports.handler = async (event) => {
 	const equipmentDetails = JSON.parse(event.body);
 	const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 	const currentTimestamp = new Date().toISOString();
-
+	console.log("1")
 	const requestBodySchema = z.array(z.object({
         owner: z.boolean({
 			required_error: "isActive is required",
@@ -18,7 +18,7 @@ exports.handler = async (event) => {
         supply_date:z.coerce.date(),
         emp_id: z.string().uuid()
     }));
-
+	console.log("2")
     const result = requestBodySchema.safeParse(equipmentDetails);
 	if (!result.success) {
 		return {
@@ -41,7 +41,9 @@ exports.handler = async (event) => {
                         RETURNING *
                         `,
 	};
+	console.log("3")
 	const client = await connectToDatabase();
+	console.log("4")
 	await client.query("BEGIN");
 	try {
         const insertedEquipment = []
@@ -60,8 +62,9 @@ exports.handler = async (event) => {
             );
              insertedEquipment.push (addEquipmentQueryResult.rows[0]);
         }
-
+		console.log("4")
 		await client.query("COMMIT");
+		console.log("5")
 		return {
 			statusCode: 200,
 			headers: {
@@ -72,6 +75,7 @@ exports.handler = async (event) => {
 				insertedEquipment),
 		};
 	} catch (error) {
+		console.log("1")
 		await client.query("ROLLBACK");
 		return {
 			statusCode: 500,
