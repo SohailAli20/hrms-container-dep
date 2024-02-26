@@ -14,3 +14,12 @@ signin:
               path: /signin
               method: post
             #   cors: true
+
+userSignup:
+    handler: auth/userSignup.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+        - http:
+              path: /signup/{id}
+              method: post
+            #   cors: true

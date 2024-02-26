@@ -21,6 +21,6 @@ updateDepartment:
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /department/{id}
+              path: /department
               method: put
             #   cors: true                            

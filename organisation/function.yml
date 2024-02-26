@@ -5,4 +5,4 @@ updateOrganization:
       - http:
           path: /organization 
           method: put
-          # cors: true
+          cors: true

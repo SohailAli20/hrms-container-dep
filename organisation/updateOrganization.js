@@ -21,7 +21,7 @@ exports.handler = async (event, context, callback) => {
 		logo: z.string().default(""),
 		address_line_1: z.string(),
 		address_line_2: z.string(),
-		landmark: z.string(),
+		landmark: z.string().optional(),
 		country: z.string(),
 		state: z.string({
 			message: "State is required",

@@ -13,7 +13,7 @@ exports.handler = async (event) => {
         department_id: z.number().int(),
         reporting_manager_id: z.string().uuid(),
         work_location: z.string(),
-        start_date: z.string().datetime(),
+        start_date: z.coerce.date(),
         emp_id: z.string().uuid()
     });
 
@@ -22,7 +22,8 @@ exports.handler = async (event) => {
 		return {
 			statusCode: 400,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
+				'Access-Control-Allow-Origin': '*',
+      			'Access-Control-Allow-Credentials': true,
 			},
 			body: JSON.stringify({
 				error: result.error.formErrors.fieldErrors,
@@ -83,7 +84,8 @@ exports.handler = async (event) => {
 		return {
 			statusCode: 200,
 			headers: {
-				Access_Control_Allow_Origin: "*",
+				'Access-Control-Allow-Origin': '*',
+      			'Access-Control-Allow-Credentials': true,
 			},
 			body: JSON.stringify({
 				...data.professionalInfo
@@ -94,7 +96,8 @@ exports.handler = async (event) => {
 		return {
 			statusCode: 500,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
+				'Access-Control-Allow-Origin': '*',
+      			'Access-Control-Allow-Credentials': true,
 			},
 			body: JSON.stringify({
 				message: error.message,
