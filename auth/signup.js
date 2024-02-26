@@ -24,7 +24,7 @@ exports.handler = async (event, context) => {
         password: requestBody.password,
     };
     const reqSchema = z.object({
-        email: z.string(),
+        email: z.string().email(),
         password: z.string(),
     });
     const valResult = reqSchema.safeParse(req);
@@ -107,7 +107,7 @@ exports.handler = async (event, context) => {
             headers: {
                 "Access-Control-Allow-Origin": "*",
             },
-            body: JSON.stringify({ message: "Successfully Signed-up",AccessToken : accessToken})
+            body: JSON.stringify({ Message: "Successfully Signed-up",AccessToken : accessToken})
         };
     } catch (error) {
         console.error("Error signing up user:", error);
