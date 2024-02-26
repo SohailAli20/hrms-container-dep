@@ -32,4 +32,4 @@ updateEmployee:
         - http:
               path: /employee/{id}
               method: put 
-            #   cors: true
+              cors: true
