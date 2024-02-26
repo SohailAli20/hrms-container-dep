@@ -25,8 +25,8 @@ searchByName:
               method: get
               cors: true
 
-updateEmployee:
-    handler: employee/updateEmployee.handler
+updatePersonalInfo:
+    handler: employee/updatePersonalInfo.handler
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
