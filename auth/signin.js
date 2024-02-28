@@ -3,8 +3,7 @@ const { z } = require("zod");
 
 const {
     CognitoIdentityProviderClient,
-    AdminInitiateAuthCommand,
-    RespondToAuthChallengeCommand,
+    AdminInitiateAuthCommand
 } = require("@aws-sdk/client-cognito-identity-provider");
 
 exports.handler = async (event, context, callback) => {
@@ -45,70 +44,48 @@ exports.handler = async (event, context, callback) => {
             }
         };
         const authResponse = await cognitoClient.send(new AdminInitiateAuthCommand(input));
-
-        if (authResponse.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
-            const newPassword = req.password;
-            const respondToAuthChallengeInput = {
-                ChallengeName: 'NEW_PASSWORD_REQUIRED',
-                ClientId: process.env.COGNITO_CLIENT_ID,
-                ChallengeResponses: {
-                    USERNAME: req.email,
-                    NEW_PASSWORD: newPassword
-                },
-                Session: authResponse.Session
-            };
-            newPasswordResponse = await cognitoClient.send(
-                new RespondToAuthChallengeCommand(respondToAuthChallengeInput)
-            );
-            console.log(newPasswordResponse);
-        }
-
-        let accessToken = null;
-        let refreshToken = null;
-
-        if (authResponse.AuthenticationResult) {
-            accessToken = authResponse.AuthenticationResult.AccessToken;
-            refreshToken = authResponse.AuthenticationResult.RefreshToken;
-        } else if (newPasswordResponse.AuthenticationResult) {
-            accessToken = newPasswordResponse.AuthenticationResult.AccessToken;
-            refreshToken = newPasswordResponse.AuthenticationResult.RefreshToken;
-        }
-
+        console.log(JSON.stringify(authResponse));
+        accessToken = authResponse.AuthenticationResult.AccessToken;
+        refreshToken = authResponse.AuthenticationResult.RefreshToken;
         await client.query(`UPDATE employee SET access_token = $1, refresh_token = $2 WHERE work_email = $3`, [accessToken, refreshToken, req.email]);
 		const res = await client.query(`SELECT * FROM employee WHERE work_email = $1`, [req.email]);
         const result = res.rows[0];
         const PersonalDetails = {
-            id: result.id,
-            email: result.email,
-            work_email: result.work_email,
-            first_name: result.first_name,
-            last_name: result.last_name,
-            gender: result.gender,
-            dob: result.dob,
-            number: result.number,
-            emergency_number: result.emergency_number,
-            highest_qualification: result.highest_qualification,
-            emp_detail_id: result.emp_detail_id,
-            description: result.description,
-            current_task_id: result.current_task_id,
-            invitation_status: result.invitation_status,
-            org_id: result.org_id,
-            image: result.image,
-            email_verified: result.email_verified
+            id: result.id || "No Data",
+            email: result.email|| "No Data",
+            work_email: result.work_email|| "No Data",
+            first_name: result.first_name|| "No Data",
+            last_name: result.last_name|| "No Data",
+            gender: result.gender|| "No Data",
+            dob: result.dob|| "No Data",
+            number: result.number || "No Data",
+            emergency_number: result.emergency_number|| "No Data",
+            highest_qualification: result.highest_qualification|| "No Data",
+            emp_detail_id: result.emp_detail_id|| "No Data",
+            description: result.description|| "No Data",
+            current_task_id: result.current_task_id|| "No Data",
+            invitation_status: result.invitation_status|| "No Data",
+            org_id: result.org_id|| "No Data",
+            image: result.image|| "No Data",
+            email_verified: result.email_verified|| "No Data"
         };
+        // let message = "Successfully Signed-In";
+        // if (result.email_verified=='NO') {
+        //     message += ", but email needs to be verified";
+        // }
         return {
             statusCode: 200,
             headers: {
                 "Access-Control-Allow-Origin": "*",
             },
             body: JSON.stringify({
-                message: "Successfully logged In",
+                message: "Successfully Signed-In" ,
                 result: PersonalDetails,
                 AccessToken: accessToken,
                 RefreshToken: refreshToken
             })
         };
-
+    
     } catch (error) {
         return {
             statusCode: 500,
