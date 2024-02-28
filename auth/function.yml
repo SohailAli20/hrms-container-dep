@@ -23,3 +23,19 @@ userSignup:
               path: /signup/{id}
               method: post
             #   cors: true
+forgotPassword:
+    handler: auth/forgotPassword.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+        - http:
+              path: /forgotpassword
+              method: post
+              cors: true    
+resetPassword:
+    handler: auth/resetPassword.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+        - http:
+              path: /resetpassword
+              method: post
+              cors: true                    
