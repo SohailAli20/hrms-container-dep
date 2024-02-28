@@ -11,10 +11,10 @@ getEmployees:
     handler: employee/getEmployees.handler
     role: ${env:LAMBDA_ROLE}
     events:
-      - http:
-          path: /employee
-          method: get
-          cors: true
+        - http:
+              path: /employee
+              method: get
+              cors: true
 
 searchByName:
     handler: employee/searchByName.handler
@@ -32,4 +32,13 @@ updatePersonalInfo:
         - http:
               path: /employee/{id}
               method: put 
+              cors: true
+
+employeeTracker:
+    handler: employee/employeeTracker.handler
+    role: ${env:LAMBDA_ROLE}
+    events:
+        - http:
+              path: /employee/tracker
+              method: get 
               cors: true
