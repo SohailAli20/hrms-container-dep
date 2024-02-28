@@ -49,7 +49,7 @@ exports.handler = async (event) => {
             employee_status: row.invitation_status,
             designation: row.designation,
             employee_type: row.emp_type,
-            image: row.image
+            image: row.image || ""
         }));
 
         return {
