@@ -24,7 +24,7 @@ exports.handler = async (event, context) => {
         password: requestBody.password,
     };
     const reqSchema = z.object({
-        email: z.string(),
+        email: z.string().email(),
         password: z.string(),
     });
     const valResult = reqSchema.safeParse(req);
@@ -73,7 +73,6 @@ exports.handler = async (event, context) => {
 				}
 			};
 			const authResponse = await cognitoClient.send(new AdminInitiateAuthCommand(inputAuth));
-			console.log("authResponse",authResponse);
 			const newPassword = req.password;
 			const respondToAuthChallengeInput = {
                 ChallengeName: 'NEW_PASSWORD_REQUIRED',
@@ -107,10 +106,9 @@ exports.handler = async (event, context) => {
             headers: {
                 "Access-Control-Allow-Origin": "*",
             },
-            body: JSON.stringify({ message: "Successfully Signed-up",AccessToken : accessToken})
+            body: JSON.stringify({ Message: "Successfully Signed-up",AccessToken : accessToken})
         };
     } catch (error) {
-        console.error("Error signing up user:", error);
         await client.query("ROLLBACK");
         const params = {
             UserPoolId: process.env.COGNITO_POOL_ID,
