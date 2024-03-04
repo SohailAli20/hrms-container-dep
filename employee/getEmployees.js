@@ -47,7 +47,7 @@ exports.handler = async (event) => {
         const EmployeeMetaData = await client.query(query);
         const resultArray = EmployeeMetaData.rows.map(row => ({
             employee_name: `${row.first_name} ${row.last_name}`,
-            employee_id: row.id,
+            id: row.id,
             email: row.work_email,
             designation: row.designation,
             employee_type: row.emp_type,
