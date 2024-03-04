@@ -7,6 +7,7 @@ const s3Client = new S3Client({ region: process.env.AWS_REGION });
 exports.handler = async (event) => {
   try {
     const contentTypeHeader = event.headers['Content-Type'];
+    console.log(contentTypeHeader )
     const bodyBuffer = Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'binary');
     const boundary = multipart.getBoundary(contentTypeHeader);
     const parts = multipart.Parse(bodyBuffer, boundary);
@@ -38,7 +39,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({ link }),
     };
   } catch (err) {
-    console.error('Error:', err.message);
+    console.error('Error:', err);
     return {
       statusCode: 500,
       headers: {
