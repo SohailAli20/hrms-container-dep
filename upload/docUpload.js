@@ -1,7 +1,8 @@
 require("dotenv").config();
-const AWS = require('aws-sdk');
-const s3 = new AWS.S3();
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const multipart = require('parse-multipart');
+
+const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
 exports.handler = async (event) => {
   try {
@@ -10,19 +11,24 @@ exports.handler = async (event) => {
     const boundary = multipart.getBoundary(contentTypeHeader);
     const parts = multipart.Parse(bodyBuffer, boundary);
     const filePart = parts.find(part => part.filename);
-    const { data, type } = filePart;
+    const { filename, data, type } = filePart;
     const imageFormat = type.split('/')[1] || 'unknown';
-    const fileName = `formData_${Date.now()}.${imageFormat}`;
+    const fileName = `${filename.replace(/ /g,"")
+                                .substring(0, filename.lastIndexOf('.'))
+                                .toLowerCase()}_${Date.now()}.${imageFormat}`;
     const decodedImageData = Buffer.from(data, 'base64');
-    const bucket = process.env.BUCKET_NAME
-    const folder = process.env.BUCKET_FOLDER_NAME
-    const s3params = {
+    const bucket = process.env.BUCKET_NAME;
+    const folder = process.env.BUCKET_FOLDER_NAME;
+    
+    const s3Params = {
       Bucket: bucket,
       Key: `${folder}${fileName}`,
       Body: decodedImageData,
       ContentType: type,
     };
-    await s3.upload(s3params).promise();
+    
+     await s3Client.send(new PutObjectCommand(s3Params));
+
     const link = `https://${bucket}.s3.amazonaws.com/${folder}${fileName}`;
     return {
       statusCode: 200,
