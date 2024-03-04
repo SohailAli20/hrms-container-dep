@@ -6,3 +6,7 @@ docUpload:
           path: /docUpload 
           method: post
           cors: true
+          request:
+            headers:
+              Content-Type: "'multipart/form-data'"
+              Accept: "'*/*'"
