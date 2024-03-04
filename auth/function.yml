@@ -16,11 +16,11 @@ signin:
               cors: true
 
 userSignup:
-    handler: auth/userSignup.handler
+    handler: auth/inviteUser.handler
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
-              path: /signup/{id}
+              path: /invite/{id}
               method: post
               cors: true
 forgotPassword:
