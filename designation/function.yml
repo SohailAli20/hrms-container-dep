@@ -1,8 +1,8 @@
-designation:
-    handler: designation/designation.handler
+getDesignation:
+    handler: designation/getDesignation.handler
     role: ${env:LAMBDA_ROLE}
     events:
-         - http:
-               path: /designation
-               method: get
-               cors: true
+        - http:
+              path: /designation
+              method: get
+              cors: true
