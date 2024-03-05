@@ -7,8 +7,8 @@ addDepartment:
               method: post
             #   cors: true
 
-getDepartment:
-    handler: department/getDepartment.handler
+listDepartment:
+    handler: department/listDepartment.handler
     role: ${env:LAMBDA_ROLE}
     events:
         - http:

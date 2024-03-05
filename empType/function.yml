@@ -7,8 +7,8 @@ addEmptype:
               method: post
               cors: true
 
-getEmptype:
-    handler: empType/getEmpType.handler
+listEmptype:
+    handler: empType/listEmpType.handler
     role: ${env:LAMBDA_ROLE}
     events:
         - http:
