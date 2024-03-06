@@ -13,6 +13,7 @@ exports.handler = async (event) => {
     const parts = multipart.Parse(bodyBuffer, boundary);
     const filePart = parts.find(part => part.filename);
     const { filename, data, type } = filePart;
+    console.log("type", type)
     const imageFormat = type.split('/')[1] || 'unknown';
     const fileName = `${filename.replace(/ /g,"")
                                 .substring(0, filename.lastIndexOf('.'))
