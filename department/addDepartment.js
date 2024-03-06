@@ -4,6 +4,8 @@ const middy = require("middy");
 const { errorHandler } = require("../util/errorHandler");
 const { bodyValidator } = require("../util/bodyValidator");
 const { authorize } = require("../util/authorizer");
+const { corsMiddleware } = require("../util/corsMiddleware");
+
 
 const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 
@@ -31,4 +33,6 @@ exports.handler = middy(async (event) => {
 })
 	.use(authorize())
 	.use(bodyValidator(reqSchema))
-	.use(errorHandler());
+	.use(errorHandler())
+	.use(corsMiddleware());
+	;

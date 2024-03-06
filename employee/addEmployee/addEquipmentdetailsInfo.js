@@ -1,37 +1,27 @@
 const { connectToDatabase } = require("../../db/dbConnector");
 const { z } = require("zod");
+const middy = require("middy");
+const { errorHandler } = require("../../util/errorHandler");
+const { bodyValidator } = require("../../util/bodyValidator");
 
-exports.handler = async (event) => {
+const requestBodySchema = z.array(z.object({
+	owner: z.boolean({
+		required_error: "isActive is required",
+		invalid_type_error: "isActive must be a boolean",
+	}),
+	device_type_id: z.number().int(),
+	manufacturer: z.string(),
+	serial_number: z.string(),
+	note: z.string(),
+	supply_date:z.coerce.date(),
+	emp_id: z.string().uuid()
+}));
+
+exports.handler = middy(async (event) => {
 	const equipmentDetails = JSON.parse(event.body);
 	const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 	const currentTimestamp = new Date().toISOString();
-	console.log("1")
-	const requestBodySchema = z.array(z.object({
-        owner: z.boolean({
-			required_error: "isActive is required",
-			invalid_type_error: "isActive must be a boolean",
-		}),
-        device_type_id: z.number().int(),
-        manufacturer: z.string(),
-        serial_number: z.string(),
-        note: z.string(),
-        supply_date:z.coerce.date(),
-        emp_id: z.string().uuid()
-    }));
-	console.log("2")
-    const result = requestBodySchema.safeParse(equipmentDetails);
-	if (!result.success) {
-		return {
-			statusCode: 400,
-			headers: {
-				'Access-Control-Allow-Origin': '*',
-      			'Access-Control-Allow-Credentials': true,
-			},
-			body: JSON.stringify({
-				error: result.error.formErrors.fieldErrors,
-			}),
-		};
-	}
+
 	const addEquipmentQuery = {
                 name: "add-equipment",
         		text: `
@@ -41,9 +31,9 @@ exports.handler = async (event) => {
                         RETURNING *
                         `,
 	};
-	console.log("3")
+
 	const client = await connectToDatabase();
-	console.log("4")
+
 	await client.query("BEGIN");
 	try {
         const insertedEquipment = []
@@ -62,9 +52,9 @@ exports.handler = async (event) => {
             );
              insertedEquipment.push (addEquipmentQueryResult.rows[0]);
         }
-		console.log("4")
+
 		await client.query("COMMIT");
-		console.log("5")
+
 		return {
 			statusCode: 200,
 			headers: {
@@ -75,20 +65,11 @@ exports.handler = async (event) => {
 				insertedEquipment),
 		};
 	} catch (error) {
-		console.log("1")
 		await client.query("ROLLBACK");
-		return {
-			statusCode: 500,
-			headers: {
-				'Access-Control-Allow-Origin': '*',
-      '			Access-Control-Allow-Credentials': true,
-			},
-			body: JSON.stringify({
-				message: error.message,
-				error: error,
-			}),
-		};
+		throw error;
 	} finally {
 		await client.end();
 	}
-};
+})
+.use(bodyValidator(requestBodySchema))
+.use(errorHandler());
