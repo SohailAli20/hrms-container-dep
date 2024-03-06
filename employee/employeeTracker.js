@@ -1,8 +1,10 @@
 const { connectToDatabase } = require("../db/dbConnector");
+const middy = require("middy");
+const { errorHandler } = require("../util/errorHandler");
 
-exports.handler = async (event) => {
-    let page = event.queryStringParameters?.page ?? null
-    if (page == null){
+exports.handler = middy(async (event) => {
+    let page = event.queryStringParameters?.page ?? null;
+    if (page == null) {
         page = 1;
     }
     page = parseInt(page);
@@ -35,44 +37,29 @@ exports.handler = async (event) => {
                 LEFT JOIN department d ON ed2.department_id = d.id
                 ORDER BY e.first_name 
                 LIMIT 10 OFFSET ${offset}
-        `;
-    try {
-        const totalPagesResult = await client.query(totalPagesQuery)
-        const totalRecords = totalPagesResult.rows[0].total_count;
-        const totalPages = Math.ceil(totalRecords / limit);
-        const EmployeeMetaData = await client.query(query);
-        const resultArray = EmployeeMetaData.rows.map(row => ({
-            employee_name: `${row.first_name} ${row.last_name}`,
-            email: row.email,
-            employee_status: row.invitation_status,
-            designation: row.designation,
-            employee_type: row.emp_type,
-            image: row.image || ""
-        }));
+    `;
+    const totalPagesResult = await client.query(totalPagesQuery);
+    const totalRecords = totalPagesResult.rows[0].total_count;
+    const totalPages = Math.ceil(totalRecords / limit);
+    const EmployeeMetaData = await client.query(query);
+    const resultArray = EmployeeMetaData.rows.map((row) => ({
+        employee_name: `${row.first_name} ${row.last_name}`,
+        email: row.email,
+        employee_status: row.invitation_status,
+        designation: row.designation,
+        employee_type: row.emp_type,
+        image: row.image || "",
+    }));
 
-        return {
-            statusCode: 200,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify({
-                totalPages: totalPages,
-                currentPage: page,
-                employees: resultArray
-            })
-        };
-    } catch (e) {
-        return {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify({
-                message: e.message,
-                error: e
-            }),
-        };
-    } finally {
-        await client.end();
-    }
-};
+    return {
+        statusCode: 200,
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({
+            totalPages: totalPages,
+            currentPage: page,
+            employees: resultArray,
+        }),
+    };
+}).use(errorHandler());

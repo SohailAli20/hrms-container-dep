@@ -1,25 +1,17 @@
 const { connectToDatabase } = require("../db/dbConnector");
 const { z } = require("zod");
+const middy = require("middy");
+const { errorHandler } = require("../util/errorHandler");
+const { pathParamsValidator } = require("../util/pathParamsValidator");
+const idSchema = z.object({
+    id: z.string().uuid({ message: "Invalid employee id" }),
+});
 
-exports.handler = async (event) => {
+exports.handler = middy(async (event) => {
     const employeeId = event.pathParameters?.id ?? null;
-    const idSchema = z.string().uuid({ message: "Invalid employee id" });
-    const isUuid = idSchema.safeParse(employeeId);
-    if (!isUuid.success) {
-        return {
-            statusCode: 400,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify({
-                error: isUuid.error.issues[0].message,
-            }),
-        };
-    }
     const client = await connectToDatabase();
 
-    try {
-        const query = `
+    const query = `
             SELECT
                 e.*,
                 a.*,
@@ -58,33 +50,20 @@ exports.handler = async (event) => {
                 e.id = $1
         `;
 
-        const result = await client.query(query, [employeeId]);
-        await client.end();
+    const result = await client.query(query, [employeeId]);
+    await client.end();
 
-        const formattedResult = formatResult(result.rows);
-        return {
-            statusCode: 200,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify(formattedResult),
-        };
-    } catch (error) {
-        console.error("Error executing query:", error);
-        return {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify({
-                message: error.message,
-                error: error,
-            }),
-        };
-    } finally {
-        await client.end();
-    }
-};
+    const formattedResult = formatResult(result.rows);
+    return {
+        statusCode: 200,
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify(formattedResult),
+    };
+})
+    .use(pathParamsValidator(idSchema))
+    .use(errorHandler());
 
 function formatResult(rows) {
     const formattedResult = {
@@ -135,8 +114,10 @@ function formatResult(rows) {
                 emp_type: row.emp_type,
                 emp_designation_id: row.emp_designation_id,
                 emp_designation: row.emp_designation,
-                reporting_manager_first_name: row.reporting_manager_first_name || "",
-                reporting_manager_last_name: row.reporting_manager_last_name || "",
+                reporting_manager_first_name:
+                    row.reporting_manager_first_name || "",
+                reporting_manager_last_name:
+                    row.reporting_manager_last_name || "",
             };
         }
 
