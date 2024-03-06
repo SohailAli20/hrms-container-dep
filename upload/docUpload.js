@@ -1,54 +1,51 @@
 require("dotenv").config();
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const multipart = require('parse-multipart');
+const middy = require("middy");
+const { errorHandler } = require("../util/errorHandler");
+const { bodyValidator } = require("../util/bodyValidator");
 
-const s3Client = new S3Client({ region: process.env.AWS_REGION });
+const s3Client = new S3Client({ region: "us-east-1" });
 
-exports.handler = async (event) => {
-  try {
-    const contentTypeHeader = event.headers['Content-Type'];
-    console.log(contentTypeHeader )
-    const bodyBuffer = Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'binary');
-    const boundary = multipart.getBoundary(contentTypeHeader);
-    const parts = multipart.Parse(bodyBuffer, boundary);
-    const filePart = parts.find(part => part.filename);
-    const { filename, data, type } = filePart;
-    const imageFormat = type.split('/')[1] || 'unknown';
-    const fileName = `${filename.replace(/ /g,"")
-                                .substring(0, filename.lastIndexOf('.'))
-                                .toLowerCase()}_${Date.now()}.${imageFormat}`;
-    const decodedImageData = Buffer.from(data, 'base64');
-    const bucket = process.env.BUCKET_NAME;
-    const folder = process.env.BUCKET_FOLDER_NAME;
-    
-    const s3Params = {
-      Bucket: bucket,
-      Key: `${folder}${fileName}`,
-      Body: decodedImageData,
-      ContentType: type,
-    };
-    
-     await s3Client.send(new PutObjectCommand(s3Params));
+const reqSchema = z.object({
+	fileName: z.string(),
+	data: z.string(),
+});
 
-    const link = `https://${bucket}.s3.amazonaws.com/${folder}${fileName}`;
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
-      body: JSON.stringify({ link }),
-    };
-  } catch (err) {
-    console.error('Error:', err);
-    return {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
-      body: JSON.stringify({ 
-        message: err.message,
-        error : err
-      }),
-    };
-  }
+exports.handler = middy(async (event) => {
+	const body = JSON.parse(event.body);
+	const fileName = body.fileName;
+	const data = body.data;
+	const contentType = data.split(";")[0].split(":")[1];
+	const fileExtension = contentType.split("/")[1];
+	const newfileName = formatFileName(fileName, fileExtension);
+	const bucket = process.env.BUCKET_NAME;
+	const folder = process.env.BUCKET_FOLDER_NAME;
+	const buffer = Buffer.from(data.split(",")[1], "base64");
+	const s3Params = {
+		Bucket: bucket,
+		Key: `${folder}${newfileName}`,
+		Body: buffer,
+		ContentType: contentType,
+	};
+
+	await s3Client.send(new PutObjectCommand(s3Params));
+	const link = `https://${bucket}.s3.amazonaws.com/${folder}${newfileName}`;
+
+	return {
+		statusCode: 200,
+		headers: {
+			"Access-Control-Allow-Origin": "*",
+		},
+		body: JSON.stringify({ link }),
+	};
+})
+	.use(bodyValidator(reqSchema))
+	.use(errorHandler());
+
+const formatFileName = (fileName, fileExtension) => {
+	fileName = fileName.substring(0, fileName.lastIndexOf("."));
+	const newfileName = `${fileName
+		.replace(/ /g, "")
+		.toLowerCase()}_${Date.now()}.${fileExtension}`;
+	return newfileName;
 };
