@@ -1,45 +1,35 @@
 const { connectToDatabase } = require("../../db/dbConnector");
 const { z } = require("zod");
+const middy = require("middy");
+const { errorHandler } = require("../../util/errorHandler");
+const { bodyValidator } = require("../../util/bodyValidator");
 
-exports.handler = async (event) => {
+
+const requestBodySchema = z.object({
+    first_name: z.string().min(3, { message: "first_name must be at least 3 characters long" }),
+    last_name: z.string().min(3, { message: "last_name must be at least 3 characters long" }),
+    email: z.string().email().optional(),
+    work_email: z.string().email().optional(),
+    gender: z.string().min(1),
+    dob: z.coerce.date(),
+    number: z.string(),
+    emergency_number: z.string().optional(),
+    highest_qualification: z.string().optional(),
+    address_line_1: z.string().optional(),
+    address_line_2: z.string().optional(),
+    landmark: z.string().optional(),
+    country: z.string().optional(),
+    state: z.string().optional(),
+    city: z.string().optional(),
+    zipcode: z.string().optional(),
+    emp_type: z.number().int().optional(),
+    image: z.string().optional().default("")
+});
+
+exports.handler = middy(async (event) => {
 	const requestBody = JSON.parse(event.body);
 	const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 	const currentTimestamp = new Date().toISOString();
-
-    const requestBodySchema = z.object({
-        first_name: z.string().min(3, { message: "first_name must be at least 3 characters long" }),
-        last_name: z.string().min(3, { message: "last_name must be at least 3 characters long" }),
-        email: z.string().email().optional(),
-        work_email: z.string().email().optional(),
-        gender: z.string().min(1),
-        dob: z.coerce.date(),
-        number: z.string(),
-        emergency_number: z.string().optional(),
-        highest_qualification: z.string().optional(),
-        address_line_1: z.string().optional(),
-        address_line_2: z.string().optional(),
-        landmark: z.string().optional(),
-        country: z.string().optional(),
-        state: z.string().optional(),
-        city: z.string().optional(),
-        zipcode: z.string().optional(),
-        emp_type: z.number().int().optional(),
-        image: z.string().optional().default("")
-    });    
-
-    const result = requestBodySchema.safeParse(requestBody);
-	if (!result.success) {
-		return {
-			statusCode: 400,
-			headers: {
-				'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Credentials': true,
-			},
-			body: JSON.stringify({
-				error: result.error.formErrors.fieldErrors,
-			}),
-		};
-	}
 
 	const personalInfoQuery = `
         INSERT INTO employee 
@@ -94,8 +84,7 @@ exports.handler = async (event) => {
                 }
             });
         });
-    
-        // Execute the second and third queries in parallel
+
         const [empAddressQueryResult, empProfessionalQueryResult] = await Promise.all([
             new Promise((resolve, reject) => {
                 client.query(empAddressQuery, [
@@ -173,18 +162,10 @@ exports.handler = async (event) => {
 		};
 	} catch (error) {
 		await client.query("ROLLBACK");
-		return {
-			statusCode: 500,
-			headers: {
-				'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Credentials': true,
-			},
-			body: JSON.stringify({
-				message: error.message,
-				error: error,
-			}),
-		};
+		throw error;
 	} finally {
         await client.end();
 	}
-};
+})
+.use(bodyValidator(requestBodySchema))
+.use(errorHandler());
