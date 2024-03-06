@@ -40,6 +40,16 @@ exports.handler = middy(async (event, context) => {
         region: "us-east-1",
     });
     try {
+        const result = await client.query(`SELECT COUNT(work_email)FROM employee WHERE work_email = $1`,[req.email]);
+        if(result.rows[0].count > 0){
+            return {
+                statusCode: 500,
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                },
+                body: JSON.stringify({message:"User account already exists"})
+            };
+        }
         const org_id = uuid();
         const user_id = uuid();
         const input = {
