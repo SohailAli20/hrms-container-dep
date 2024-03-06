@@ -1,23 +1,16 @@
 const { connectToDatabase } = require("../db/dbConnector");
 const { z } = require("zod");
-exports.handler = async (event) => {
-    const params = event.queryStringParameters?.name ?? null;
-    const nameSchema = z.string({ message: "Invalid employee name" });
-    const isName = nameSchema.safeParse(params);
-    if (!isName.success) {
-        return {
-            statusCode: 400,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify({
-                error: isName.error.issues[0].message,
-            }),
-        };
-    }
-    const client = await connectToDatabase();
+const middy = require("middy");
+const { errorHandler } = require("../util/errorHandler");
+const { queryParamsValidator } = require("../util/queryParamsValidator");
 
-    try {
+const nameSchema = z.object({
+    name:z.string({ message: "Invalid employee name" }),
+})
+
+exports.handler = middy(async (event) => {
+    const params = event.queryStringParameters?.name ?? null;
+    const client = await connectToDatabase();
         const query = `
             SELECT 
                 e.*, 
@@ -58,18 +51,7 @@ exports.handler = async (event) => {
             },
             body: JSON.stringify(extractedData),
         };
-    } catch (error) {
-        return {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify({
-                message: error.message,
-                error: error,
-            }),
-        };
-    } finally {
-        await client.end();
-    }
-};
+    
+})
+    .use(queryParamsValidator(nameSchema))
+	.use(errorHandler());
