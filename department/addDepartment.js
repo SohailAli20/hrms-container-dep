@@ -3,6 +3,7 @@ const { z } = require("zod");
 const middy = require("middy");
 const { errorHandler } = require("../util/errorHandler");
 const { bodyValidator } = require("../util/bodyValidator");
+const { authorize } = require("../util/authorizer");
 
 const org_id = "482d8374-fca3-43ff-a638-02c8a425c492";
 
@@ -28,5 +29,6 @@ exports.handler = middy(async (event) => {
 		body: JSON.stringify(insertedDepartment),
 	};
 })
+	.use(authorize())
 	.use(bodyValidator(reqSchema))
 	.use(errorHandler());
