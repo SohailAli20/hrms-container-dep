@@ -35,4 +35,3 @@ exports.handler = middy(async (event) => {
 	.use(bodyValidator(reqSchema))
 	.use(errorHandler())
 	.use(corsMiddleware());
-	;
