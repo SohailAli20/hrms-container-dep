@@ -3,6 +3,7 @@ const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const middy = require("middy");
 const { errorHandler } = require("../util/errorHandler");
 const { bodyValidator } = require("../util/bodyValidator");
+const { z } = require("zod");
 
 const s3Client = new S3Client({ region: "us-east-1" });
 
