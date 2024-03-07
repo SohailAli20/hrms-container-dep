@@ -1,6 +1,7 @@
 const {
 	UserNotConfirmedException,
 	NotAuthorizedException,
+    UsernameExistsException
 } = require("@aws-sdk/client-cognito-identity-provider");
 
 exports.errorHandler = () => ({
@@ -25,6 +26,18 @@ exports.errorHandler = () => ({
 				},
 				body: JSON.stringify({
 					message: "Incorrect username or password.",
+				}),
+			};
+			next();
+		}
+        if (handler.error instanceof UsernameExistsException) {
+			handler.response = {
+				statusCode: 401,
+				headers: {
+					"Access-Control-Allow-Origin": "*",
+				},
+				body: JSON.stringify({
+					message: "user already exists.",
 				}),
 			};
 			next();

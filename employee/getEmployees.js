@@ -44,8 +44,8 @@ exports.handler = middy(async (event) => {
     const totalPagesResult = await client.query(totalPagesQuery);
     const totalRecords = totalPagesResult.rows[0].total_count;
     const totalPages = Math.ceil(totalRecords / limit);
-    const EmployeeMetaData = await client.query(query);
-    const resultArray = EmployeeMetaData.rows.map((row) => ({
+    const employeeMetaData = await client.query(query);
+    const resultArray = employeeMetaData.rows.map((row) => ({
         employee_name: `${row.first_name} ${row.last_name}`,
         id: row.id,
         email: row.work_email,
