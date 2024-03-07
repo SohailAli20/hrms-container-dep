@@ -2,131 +2,107 @@ require("dotenv").config();
 const { connectToDatabase } = require("../db/dbConnector");
 const { z } = require("zod");
 const { v4: uuid } = require("uuid");
-const nodemailer = require("nodemailer");
 const {
-    CognitoIdentityProviderClient,
-    AdminInitiateAuthCommand,
-    AdminCreateUserCommand,
-    RespondToAuthChallengeCommand,
-    AdminDeleteUserCommand
+	CognitoIdentityProviderClient,
+	SignUpCommand,
+	AdminDeleteUserCommand,
 } = require("@aws-sdk/client-cognito-identity-provider");
 
 const middy = require("middy");
 const { errorHandler } = require("../util/errorHandler");
 const { bodyValidator } = require("../util/bodyValidator");
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: "chetankumar6609@gmail.com",
-        pass: "tdyw zade oqvr pxyv"
-    }
-});
+const org_id = uuid();
+const user_id = uuid();
 
 const reqSchema = z.object({
-    email: z.string().email(),
-    password: z.string(),
+	email: z.string().email(),
+	password: z.string(),
+});
+
+const cognitoClient = new CognitoIdentityProviderClient({
+	region: "us-east-1",
 });
 
 exports.handler = middy(async (event, context) => {
-    const requestBody = JSON.parse(event.body);
-    const req = {
-        email: requestBody.email,
-        password: requestBody.password,
-    };
+	const requestBody = JSON.parse(event.body);
+	const req = {
+		email: requestBody.email,
+		password: requestBody.password,
+	};
+	const client = await connectToDatabase();
 
-    const client = await connectToDatabase();
-    const cognitoClient = new CognitoIdentityProviderClient({
-        region: "us-east-1",
-    });
-    try {
-        const result = await client.query(`SELECT COUNT(work_email)FROM employee WHERE work_email = $1`,[req.email]);
-        if(result.rows[0].count > 0){
-            return {
-                statusCode: 500,
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                },
-                body: JSON.stringify({message:"User account already exists"})
-            };
-        }
-        const org_id = uuid();
-        const user_id = uuid();
-        const input = {
-            UserPoolId: process.env.COGNITO_POOL_ID,
-            Username: req.email,
-            TemporaryPassword: req.password,
-            UserAttributes: [
-                {
-                    Name: "custom:org_id",
-                    Value: org_id,
-                },
-                {
-                    Name: "custom:user_id",
-                    Value: user_id,
-                },
-                {
-                    Name: "custom:role",
-                    Value: "admin",
-                }
-            ],
-            MessageAction: "SUPPRESS"
-        };
-        const createUserResponse = await cognitoClient.send(new AdminCreateUserCommand(input));
-        const inputAuth = {
-            UserPoolId: process.env.COGNITO_POOL_ID,
-            ClientId: process.env.COGNITO_CLIENT_ID,
-            AuthFlow: 'ADMIN_USER_PASSWORD_AUTH',
-            AuthParameters: {
-                USERNAME: req.email,
-                PASSWORD: req.password
-            }
-        };
-        const authResponse = await cognitoClient.send(new AdminInitiateAuthCommand(inputAuth));
-        const newPassword = req.password;
-        const respondToAuthChallengeInput = {
-            ChallengeName: 'NEW_PASSWORD_REQUIRED',
-            ClientId: process.env.COGNITO_CLIENT_ID,
-            ChallengeResponses: {
-                USERNAME: req.email,
-                NEW_PASSWORD: newPassword
-            },
-            Session: authResponse.Session
-        };
-        newPasswordResponse = await cognitoClient.send(
-            new RespondToAuthChallengeCommand(respondToAuthChallengeInput)
-        );
-        const accessToken = newPasswordResponse ? newPasswordResponse.AuthenticationResult.AccessToken : authResponse.AuthenticationResult.AccessToken;
-        const RefreshToken = newPasswordResponse.AuthenticationResult.RefreshToken;
-        const verificationLink = ` https://bwppdwpoab.execute-api.us-east-1.amazonaws.com/dev/verify?email_id=${req.email}`;
+	const result = await client.query(
+		`SELECT COUNT(work_email)FROM employee WHERE work_email = $1`,
+		[req.email]
+	);
+	if (result.rows[0].count > 0) {
+		return {
+			statusCode: 500,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+			},
+			body: JSON.stringify({ message: "user account already exists" }),
+		};
+	}
+    	const input = {
+		ClientId: process.env.COGNITO_CLIENT_ID,
+		Username: req.email,
+		Password: req.password,
+		UserAttributes: [
+			{
+				Name: "custom:org_id",
+				Value: org_id,
+			},
+			{
+				Name: "custom:user_id",
+				Value: user_id,
+			},
+			{
+				Name: "custom:role",
+				Value: "admin",
+			},
+		],
+		DesiredDeliveryMediums: "EMAIL",
+		MessageAction: "RESEND",
+	};
 
-        await transporter.sendMail({
-            from: "chetankumar6609@gmail.com",
-            to: req.email,
-            subject: 'Email Verification',
-            text: `Please click the link to verify your email: ${verificationLink}`
-        });
-
-        await client.query("BEGIN");
-        const res1 = await client.query(`INSERT INTO organisation(id) VALUES ($1)`, [org_id]);
-        const res2 = await client.query(`INSERT INTO employee (id , work_email, invitation_status,org_id,email_verified,access_token,refresh_token) VALUES ($1,$2, 'SENT',$3,'NO',$4,$5)`, [user_id, req.email, org_id, accessToken, RefreshToken]);
-        await client.query("COMMIT");
-        return {
-            statusCode: 200,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify({ Message: "Successfully Signed-up", AccessToken: accessToken })
-        };
-    } catch (error) {
-        await client.query("ROLLBACK");
-        const params = {
-            UserPoolId: process.env.COGNITO_POOL_ID,
-            Username: req.email,
-        };
-        await cognitoClient.send(new AdminDeleteUserCommand(params));
-        throw error;
-    }
+	try {
+		const command = new SignUpCommand(input);
+		const signupResponse = await cognitoClient.send(command);
+        console.log(JSON.stringify(signupResponse))
+		await client.query("BEGIN");
+		await client.query(
+			`INSERT INTO organisation(id) VALUES ($1)`,
+			[org_id]
+		);
+		await client.query(`
+                    INSERT INTO employee(
+                        id ,
+                        work_email,
+                        invitation_status,
+                        org_id,
+                        email_verified
+                    ) VALUES ($1, $2,'SENT', $3, 'NO')`,
+			[user_id, req.email, org_id]
+		);
+		await client.query("COMMIT");
+		return {
+			statusCode: 200,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+			},
+			body: JSON.stringify({ Message: "successfully signed up" }),
+		};
+	} catch (error) {
+		await client.query("ROLLBACK");
+		const params = {
+			UserPoolId: process.env.COGNITO_POOL_ID,
+			Username: req.email,
+		};
+		await cognitoClient.send(new AdminDeleteUserCommand(params));
+		throw error;
+	}
 })
-.use(bodyValidator(reqSchema))
-.use(errorHandler());
+	.use(bodyValidator(reqSchema))
+	.use(errorHandler());
