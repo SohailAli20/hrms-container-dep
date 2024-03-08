@@ -4,11 +4,11 @@ const { Client } = require("pg");
 async function connectToDatabase() {
 	try {
 		const client = new Client({
-			host: process.env.HOST,
+			host: process.env.DB_HOST,
 			port: process.env.DB_PORT,
 			database: "workflow",
-			user: process.env.USER,
-			password: process.env.PASSOWRD,
+			user: process.env.DB_USER,
+			password: process.env.DB_PASSOWRD,
 		});
 		await client.connect();
 		return client;
