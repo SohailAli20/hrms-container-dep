@@ -5,6 +5,7 @@ useDotenv: true
 
 plugins:
     - serverless-offline
+    - serverless-esbuild
 
 provider:
     name: aws
@@ -29,3 +30,6 @@ functions:
     - ${file(./designation/function.yml)}
     - ${file(./upload/function.yml)}
     
+custom:
+  serverless-offline:
+    httpPort: 4000
