@@ -10,6 +10,7 @@ async function connectToDatabase() {
 			user: process.env.DB_USER,
 			password: process.env.DB_PASSOWRD,
 		});
+		consoleconsole.log(JSON.stringify(client));
 		await client.connect();
 		return client;
 	} catch (error) {
