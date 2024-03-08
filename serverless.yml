@@ -28,6 +28,6 @@ functions:
     - ${file(./designation/function.yml)}
     - ${file(./upload/function.yml)}
     
-custom:
-  serverless-offline:
-    httpPort: 4000
+# custom:
+#   serverless-offline:
+#     httpPort: 4000

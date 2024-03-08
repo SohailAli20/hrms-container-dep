@@ -29,7 +29,7 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app ./
 
 # Expose the port your app runs on
-EXPOSE 4000
+EXPOSE 3000
 
 # Command to run your app
 CMD ["node", "node_modules/serverless/bin/serverless", "offline", "--host", "0.0.0.0"]
