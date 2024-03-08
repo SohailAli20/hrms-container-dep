@@ -1,7 +1,7 @@
-# Stage 1: Build stage
-FROM node:18 AS build
+# Use node:18 as base image
+FROM node:18-slim
 
-# Set the working directory in the build stage
+# Set the working directory in the container
 WORKDIR /app
 
 # Install serverless globally
@@ -16,20 +16,20 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Stage 2: Production stage
-FROM node:18-slim
-
-# Set the working directory in the production stage
-WORKDIR /app
-
-# Copy the entire node_modules directory from the build stage to the production stage
-COPY --from=build /app/node_modules /app/node_modules
-
-# Copy the application files from the build stage to the production stage
-COPY --from=build /app ./
-
 # Expose the port your app runs on
 EXPOSE 3000
 
+# Specify the variables you need (you can provide default values if needed)
+ARG DB_HOST=localhost
+ARG DB_PASSWORD=password
+ARG DB_USER=root
+ARG DB_PORT=3306
+
+# Set environment variables
+ENV DB_HOST=$DB_HOST
+ENV DB_PASSWORD=$DB_PASSWORD
+ENV DB_USER=$DB_USER
+ENV DB_PORT=$DB_PORT
+
 # Command to run your app
-CMD ["node", "node_modules/serverless/bin/serverless", "offline", "--host", "0.0.0.0"]
+CMD ["serverless", "offline", "--host", "0.0.0.0"]
